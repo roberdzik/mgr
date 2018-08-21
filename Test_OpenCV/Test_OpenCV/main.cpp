@@ -6,6 +6,8 @@
 using namespace cv;
 using namespace std;
 
+
+//info testowe
 /// Global variables
 const string file_name = ("test_color.jpg");
 const string location = ("../data/") + file_name;
