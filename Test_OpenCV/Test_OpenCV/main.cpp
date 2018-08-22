@@ -11,7 +11,7 @@ using namespace std;
 /// Global variables
 const string file_name = ("test_color.jpg");
 const string location = ("../data/") + file_name;
-Mat img, hsv, test_img, binary;
+Mat img, img_range, hsv, test_img, binary;
 vector<Mat> hsv_split, bgr_split, image_split;
 vector<int> compression_params;
 int alfa = 0, beta = 0;
@@ -33,6 +33,7 @@ int main(void)
 {
 
 	img = imread(location);
+	img_range = imread("../data/img_range.jpg");
 
 	if (img.empty())
 	{
@@ -53,7 +54,7 @@ int main(void)
 	Test();
 	//range_img();
 	//HSV_to_BGR();
-	
+			
 	cout << "test#100" << endl;
 
 	waitKey(0);
@@ -84,7 +85,7 @@ int alfa_range()
 	cout << "dolna wartosc: \n";
 	cin >> alfa;
 
-	if (alfa >= 0 && alfa <= 255)
+	if (alfa >= 0 && alfa <= 179)
 	{
 		return 1;
 	}
@@ -99,7 +100,7 @@ int beta_range()
 	cout << "gorna wartosc: \n";
 	cin >> beta;
 
-	if (beta >= 0 && beta <= 255)
+	if (beta >= 0 && beta <= 179 && beta != alfa)
 	{
 		return 0;
 	}
@@ -139,8 +140,6 @@ void BGR_to_HSV()
 	imwrite("../data/hue.jpg", hsv_split[0], compression_params);
 	imwrite("../data/sat.jpg", hsv_split[1], compression_params);
 	imwrite("../data/val.jpg", hsv_split[2], compression_params);
-
-	
 }
 
 void BGR()
@@ -217,84 +216,136 @@ void Red()
 
 void Test()
 {
-
+	Mat img_hsv, img_bgr;
+	vector<Mat> img_hsv_split;
 	Mat element(3, 3, CV_8U, cv::Scalar(1));						//Okreslenie opcji erozji 
-	const string window_name[] = { "binary" };
-	namedWindow(window_name[0], CV_WINDOW_AUTOSIZE);
+
+	cvtColor(img_range, img_hsv, CV_BGR2HSV);								//Konwersja BGR->HSV
+	split(img_hsv, img_hsv_split);										//Rozdzielenie HSV na poszczególne kana³y 
 	
-	inRange(hsv_split[0], alfa, beta, binary);                      //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+	if (alfa > beta)
+	{
+		inRange(img_hsv_split[0], beta, alfa, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+		inRange(binary, 0, 1, binary);
+	}
+	else
+	{
+		inRange(img_hsv_split[0], alfa, beta, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+	}
 	blur(binary, binary, cv::Size(3, 3));							//Rozmycie 
 	erode(binary, binary, element);									//Erozja 
-	imshow(window_name[0], binary);									//Obraz binarny 
+
+	img_hsv_split[2] = binary;
+	merge(img_hsv_split, img_hsv);
+	cvtColor(img_hsv, img_bgr, COLOR_HSV2BGR);
+
+	const string named_window[] = { "zakres", "binary" };
+	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
+	namedWindow(named_window[1], CV_WINDOW_AUTOSIZE);
+	imshow(named_window[0], img_bgr);
+	imshow(named_window[1], img_hsv_split[2]);
 
 }
 
-
-//tworzenie obrazu zakresu
+///wyœwietlenie wybranego zakresu
 void range_img()
 {
-	///inicjalizacja zmiennych
-	int step_size = 300;
-	int range_size = beta - alfa + 1;
-	int range_step_i = 255 / range_size;
-	int range_step_j = 255 / step_size;
-	
-	///Utworzenie wstepnej macierzy zakresu
-	Mat range_hue(step_size, range_size, CV_64F);
-	Mat range_val(step_size, range_size, CV_64F);
-	Mat range_sat(step_size, range_size, CV_64F);
-		
-	for (int j = 0; j < range_hue.cols; j++)
-	{
-		for (int i = 0; i < range_hue.rows; i++)
-		{
-			range_hue.at<double>(i, j) = alfa + j;
-			range_val.at<double>(i, j) = range_step_i*(1 + j);
-			range_sat.at<double>(i, j) = range_step_j*(1 + i);
-		}
-	}	
-		
-	//Wyœwietlenie macierzy range_...
-	cout << range_hue << endl;
-	cout << range_val << endl;
-	cout << range_sat << endl;
-
-	///utworzenie macierzy zakresu
-	Mat range_hsv, range_bgr=img;
 	vector<Mat> range_hsv_split = hsv_split;
+	Mat range_hsv, range_bgr;
+	Mat element(3, 3, CV_8U, cv::Scalar(1));						//Okreslenie opcji erozji 
+	const string named_window[] = { "zakres", "binary"};
+	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
+	namedWindow(named_window[1], CV_WINDOW_AUTOSIZE);
 
-	///zmiana rozmiaru macierzy.
-	range_hsv_split[0].create(step_size, range_size, CV_64F);
-	range_hsv_split[1].create(step_size, range_size, CV_64F);
-	range_hsv_split[2].create(step_size, range_size, CV_64F);
-	range_bgr.create(step_size, range_size, CV_64F);
-	
-	///zapisanie macierzy do kanalow
-	range_hsv_split[0] = range_hue;
-	range_hsv_split[1] = range_val;
-	range_hsv_split[2] = range_sat;
-			
-	//Wyœwietlenie macierzy range_...
-	/*cout << range_hue << endl;
-	cout << range_val << endl;
-	cout << range_sat << endl;*/
+	if (alfa > beta)
+	{
+		inRange(hsv_split[0], beta, alfa, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+		inRange(binary, 0, 50, binary);
+	}
+	else
+	{
+		inRange(hsv_split[0], alfa, beta, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+	}
 
-
-	merge(range_hsv_split, range_hsv);
-
-	//cvtColor(range_hsv, range_bgr, COLOR_HSV2BGR);
-
-	//const string named_window[] = { "zakres" };
-	//namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	//imshow(named_window[0], range_bgr);						//G+R
-
-	//imwrite("../data/range_hsv.jpg", range_bgr, compression_params);
-
-	cout << "test#100" << endl;
+	blur(binary, binary, cv::Size(3, 3));							//Rozmycie 
+	erode(binary, binary, element);									//Erozja 
 		
+	range_hsv_split[2] = binary;
+	merge(range_hsv_split, range_hsv);
+	cvtColor(range_hsv, range_bgr, COLOR_HSV2BGR);
+		
+	imshow(named_window[0], range_bgr);				
+	imshow(named_window[1], range_hsv_split[2]);
+
 }
 
-// funkcja zakres opcja 2
+///tworzenie obrazu zakresu
+//void range_img()
+//{
+//	///inicjalizacja zmiennych
+//	int step_size = 300;
+//	int range_size = beta - alfa + 1;
+//	int range_step_i = 255 / range_size;
+//	int range_step_j = 255 / step_size;
+//	
+//	///Utworzenie wstepnej macierzy zakresu
+//	Mat range_hue(step_size, range_size, CV_64F);
+//	Mat range_val(step_size, range_size, CV_64F);
+//	Mat range_sat(step_size, range_size, CV_64F);
+//
+//
+//		
+//	for (int j = 0; j < range_hue.cols; j++)
+//	{
+//		for (int i = 0; i < range_hue.rows; i++)
+//		{
+//			range_hue.at<double>(i, j) = alfa + j;
+//			range_val.at<double>(i, j) = range_step_i*(1 + j);
+//			range_sat.at<double>(i, j) = range_step_j*(1 + i);
+//		}
+//	}	
+//		
+//	//Wyœwietlenie macierzy range_...
+//	cout << range_hue << endl;
+//	cout << range_val << endl;
+//	cout << range_sat << endl;
+//
+//	///utworzenie macierzy zakresu
+//	Mat range_hsv, range_bgr=img;
+//	vector<Mat> range_hsv_split = hsv_split;
+//
+//	///zmiana rozmiaru macierzy.
+//	range_hsv_split[0].create(step_size, range_size, CV_64F);
+//	range_hsv_split[1].create(step_size, range_size, CV_64F);
+//	range_hsv_split[2].create(step_size, range_size, CV_64F);
+//	range_bgr.create(step_size, range_size, CV_64F);
+//	
+//	///zapisanie macierzy do kanalow
+//	range_hsv_split[0] = range_hue;
+//	range_hsv_split[1] = range_val;
+//	range_hsv_split[2] = range_sat;
+//			
+//	//Wyœwietlenie macierzy range_...
+//	/*cout << range_hue << endl;
+//	cout << range_val << endl;
+//	cout << range_sat << endl;*/
+//
+//
+//	merge(range_hsv_split, range_hsv);
+//
+//	//cvtColor(range_hsv, range_bgr, COLOR_HSV2BGR);
+//
+//	//const string named_window[] = { "zakres" };
+//	//namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
+//	//imshow(named_window[0], range_bgr);						//G+R
+//
+//	//imwrite("../data/range_hsv.jpg", range_bgr, compression_params);
+//
+//	cout << "test#100" << endl;
+//		
+//}
+
+/// funkcja zakres opcja 2
 //void zakres()
 //{
 //	Mat binary;
@@ -318,7 +369,7 @@ void range_img()
 //	imshow(named_window[1], binary);					//Obraz binarny 
 //}
 
-// funkcja zakres opcja 3
+/// funkcja zakres opcja 3
 //void zakres()
 //{
 //	alfa = 0;		//inicjalizacja pocz¹tkowego dolnego progu 
@@ -339,7 +390,7 @@ void range_img()
 //
 //}
 
-//funkcja zakres opcja 4 (1+3)
+///funkcja zakres opcja 4 (1+3)
 //void zakres()
 //{
 //	alfa = 0;		//inicjalizacja pocz¹tkowego dolnego progu 
@@ -384,7 +435,7 @@ void print_image()
 }
 
 
-//	HSV_to_BGR - test
+///	HSV_to_BGR - test
 //void HSV_to_BGR()
 //{
 //	Mat test_picture, test_hsv;
