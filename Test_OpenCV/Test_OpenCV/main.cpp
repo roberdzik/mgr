@@ -6,35 +6,40 @@
 using namespace cv;
 using namespace std;
 
-
-//info testowe
 /// Global variables
-const string file_name = ("test_color.jpg");
-const string location = ("../data/") + file_name;
-Mat img, img_range, hsv, test_img, binary;
+const string file_name = ("test_color.jpg");	//nazwa obrazu do obróbki
+Mat img, img_range, img_s_range, img_bgr, hsv, binary;
 vector<Mat> hsv_split, bgr_split, image_split;
 vector<int> compression_params;
 int alfa = 0, beta = 0;
 
-void BGR_to_HSV();
-void BGR();
-void print_image();
-void Blue();
-void Green();
-void Red();
-void Test();
-void zakres();
+void BGR_to_HSV();		/*Funkcja odpowiedzialna za konwersje obrazu BGR na HSV.*/
+void BGR();				/*Funkcja odpowiedzialna za wyœwietlenie kana³ów i sk³adowych BGR.*/
+void Blue();			/*Funkcja wyœwietlaj¹ca sk³adow¹ Blue obrazu.*/
+void Green();			/*Funkcja wyœwietlaj¹ca sk³adow¹ Green obrazu.*/
+void Red();				/*Funkcja wyœwietlaj¹ca sk³adow¹ Red obrazu.*/
+void zakres();			/*Funkcja pozwalaj¹ca wprowadzenie zakresu kolorów.*/
 void range_img();
+void Test();			/*Funkcja testowa*/
+void print_image();		/*      Funkcja nie u¿ywana     */
 int alfa_range();
 int beta_range();
+
 //void HSV_to_BGR();
 
 int main(void)
 {
+	///wczytanie obrazów
+	img = imread("../data/" + file_name);
+	img_range = imread("../data/img_range_0.jpg");
+	img_s_range = imread("../data/img_range.jpg");
+	
+	///Stworzenie ogna na grafike
+	const string window_0[] = { "Range" };
+	namedWindow(window_0[0], CV_WINDOW_AUTOSIZE);
+	imshow(window_0[0], img_range);	//Wyœwietlenie grafiki zakresu w oknie
 
-	img = imread(location);
-	img_range = imread("../data/img_range.jpg");
-
+	///Sprawdzenie poprawnoœci za³adowanie obrazu do obróbki
 	if (img.empty())
 	{
 		cout << "Nie znaleziono pliku " << file_name << endl;
@@ -48,20 +53,23 @@ int main(void)
 	///wprowadzenie zakresu koloru;
 	zakres();
 
+	///Konwersja obrazu z BGR na HSV
 	BGR_to_HSV();
-	//BGR();
-
+	
 	Test();
+	
+	///Funkcje chwilowo nie u¿ywane
+	//BGR();
 	//range_img();
 	//HSV_to_BGR();
 			
-	cout << "test#100" << endl;
+	cout << "test#100" << endl;	//Informacja testowa
 
 	waitKey(0);
 	return 0;
 }
 
-// funkcja zakres opcja 1
+///Wprowadzenie zakresu progowania kolorów
 void zakres()
 {
 	int flaga_0 = 0;
@@ -80,6 +88,7 @@ void zakres()
 	cout << "Szukany kolor zawiera sie w: (" << alfa << ", " << beta << ")." << endl;
 	
 }
+///Wprowadzenie dolnego(alfa) i górnego(beta) zakresu koloru
 int alfa_range()
 {
 	cout << "dolna wartosc: \n";
@@ -94,7 +103,7 @@ int alfa_range()
 		cout << "Zla wartosc dolnego zakresy\n";
 		return 0;
 	}
-}
+}	
 int beta_range()
 {
 	cout << "gorna wartosc: \n";
@@ -111,7 +120,7 @@ int beta_range()
 	}
 }
 
-//Konwersja przestrzeni barw w OpenCV
+///Konwersja przestrzeni barw w OpenCV
 void BGR_to_HSV()
 {
 	///Stworzenie okien
@@ -146,94 +155,107 @@ void BGR()
 {
 	///Stworzenie okien
 	const string named_window[] = {"B", "G", "R"};
-	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);    //Utworzenie okien 
+	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);    
 	namedWindow(named_window[1], CV_WINDOW_AUTOSIZE);
 	namedWindow(named_window[2], CV_WINDOW_AUTOSIZE);
 
-	split(img, bgr_split);
+	split(img, bgr_split);	//rozdzielenie kana³ów obrazu
 
+	///Wyœwietlenie obrazów poszczególnych kana³ów BGR (czarno-bia³e; macierz wartoœci)
 	imshow(named_window[0], bgr_split[0]);						//B
-	Blue();
-
 	imshow(named_window[1], bgr_split[1]);						//G
-	Green();
-
 	imshow(named_window[2], bgr_split[2]);						//R
+	
+	///Wyœwietlenie obrazów poszczególnych kana³ów BGR (w poszczególnych kolorach)
+	Blue();
+	Green();
 	Red();
 
+	///Ustawienia parametrów obrazów
 	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
 	compression_params.push_back(100);							//Jakosc 100 
 
+	///Zapisanie obrazów
 	imwrite("../data/Blue.jpg", bgr_split[0], compression_params);
 	imwrite("../data/Green.jpg", bgr_split[1], compression_params);
 	imwrite("../data/Red.jpg", bgr_split[2], compression_params);
 }
 void Blue()
 {
-	vector<Mat>  test_split;
-	split(img, test_split);
+	vector<Mat>  split_img, img_B;
+	split(img, split_img);	//podzia³ obrazu na kana³y
 
-	test_split[1] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	test_split[2] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	merge(test_split, test_img);
+	///wyzerowanie kana³ów G i R
+	split_img[1] = Mat::zeros(img.rows, img.cols, CV_8UC1);
+	split_img[2] = Mat::zeros(img.rows, img.cols, CV_8UC1);
+
+	merge(split_img, img_B);	//scalenie kana³ów
 	
+	///Stworzenie okien
 	const string named_window[] = { "Blue" };
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	imshow(named_window[0], test_img);						//G+R
+	imshow(named_window[0], img_B);	//Wyœwietlenie sk³adowej Blue
 
-	imwrite("../data/img_Blue.jpg", test_img, compression_params);
+	imwrite("../data/img_Blue.jpg", img_B, compression_params);	//Zapisanie sk³adowej obrazu Blue
 }
 void Green()
 {
-	vector<Mat>  test_split;
-	split(img, test_split);
+	vector<Mat>  split_img, img_G;
+	split(img, split_img);	//podzia³ obrazu na kana³y
 
-	test_split[0] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	test_split[2] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	merge(test_split, test_img);
+	///wyzerowanie kana³ów B i R
+	split_img[0] = Mat::zeros(img.rows, img.cols, CV_8UC1);
+	split_img[2] = Mat::zeros(img.rows, img.cols, CV_8UC1);
+	merge(split_img, img_G);
 
+	///Stworzenie okien
 	const string named_window[] = { "Green" };
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	imshow(named_window[0], test_img);						//G+R
+	imshow(named_window[0], img_G);	//Wyœwietlenie sk³adowej Green
 
-	imwrite("../data/img_Green.jpg", test_img, compression_params);
+	imwrite("../data/img_Green.jpg", img_G, compression_params);	//Zapisanie sk³adowej obrazu Green
 }
 void Red()
 {
-	vector<Mat>  test_split;
-	split(img, test_split);
+	vector<Mat>  split_img, img_R;
+	split(img, split_img);	//podzia³ obrazu na kana³y
 
-	test_split[0] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	test_split[1] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	merge(test_split, test_img);
+	///wyzerowanie kana³ów B i G
+	split_img[0] = Mat::zeros(img.rows, img.cols, CV_8UC1);
+	split_img[1] = Mat::zeros(img.rows, img.cols, CV_8UC1);
+	merge(split_img, img_R);
 
+	///Stworzenie okien
 	const string named_window[] = { "Red" };
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	imshow(named_window[0], test_img);						//G+R
+	imshow(named_window[0], img_R);	//Wyœwietlenie sk³adowej Red
 
-	imwrite("../data/img_Red.jpg", test_img, compression_params);
+	imwrite("../data/img_Red.jpg", img_R, compression_params);	//Zapisanie sk³adowej obrazu Red
 }
 
-void Test()
+///wyœwietlenie wybranego zakresu
+void range_img()
 {
-	Mat img_hsv, img_bgr;
+	Mat img_hsv;
 	vector<Mat> img_hsv_split;
-	Mat element(3, 3, CV_8U, cv::Scalar(1));						//Okreslenie opcji erozji 
+	Mat element(3, 3, CV_8U, cv::Scalar(1));	//Okreslenie opcji erozji 
 
-	cvtColor(img_range, img_hsv, CV_BGR2HSV);								//Konwersja BGR->HSV
-	split(img_hsv, img_hsv_split);										//Rozdzielenie HSV na poszczególne kana³y 
+	cvtColor(img_s_range, img_hsv, CV_BGR2HSV);	//Konwersja BGR->HSV
+	split(img_hsv, img_hsv_split);	//Rozdzielenie HSV na poszczególne kana³y 
 	
+	///Progowanie zgodnie z wartosciami lowerb, i upperb (hsv_split[0] - HUE - barwa)
 	if (alfa > beta)
 	{
-		inRange(img_hsv_split[0], beta, alfa, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+		inRange(img_hsv_split[0], beta, alfa, binary);	
 		inRange(binary, 0, 1, binary);
 	}
 	else
 	{
-		inRange(img_hsv_split[0], alfa, beta, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+		inRange(img_hsv_split[0], alfa, beta, binary);
 	}
-	blur(binary, binary, cv::Size(3, 3));							//Rozmycie 
-	erode(binary, binary, element);									//Erozja 
+
+	blur(binary, binary, cv::Size(3, 3));	//Rozmycie 
+	erode(binary, binary, element);	//Erozja 
 
 	img_hsv_split[2] = binary;
 	merge(img_hsv_split, img_hsv);
@@ -241,43 +263,47 @@ void Test()
 
 	const string named_window[] = { "zakres", "binary" };
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	namedWindow(named_window[1], CV_WINDOW_AUTOSIZE);
 	imshow(named_window[0], img_bgr);
-	imshow(named_window[1], img_hsv_split[2]);
+	
+	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
+	compression_params.push_back(100);							//Jakosc 100 
+
+	///Zapis poszczegolnych obrazow 
+	imwrite("../data/range_selected.jpg", img_bgr, compression_params);
 
 }
 
-///wyœwietlenie wybranego zakresu
-void range_img()
-{
-	vector<Mat> range_hsv_split = hsv_split;
-	Mat range_hsv, range_bgr;
-	Mat element(3, 3, CV_8U, cv::Scalar(1));						//Okreslenie opcji erozji 
-	const string named_window[] = { "zakres", "binary"};
-	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	namedWindow(named_window[1], CV_WINDOW_AUTOSIZE);
-
-	if (alfa > beta)
-	{
-		inRange(hsv_split[0], beta, alfa, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
-		inRange(binary, 0, 50, binary);
-	}
-	else
-	{
-		inRange(hsv_split[0], alfa, beta, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
-	}
-
-	blur(binary, binary, cv::Size(3, 3));							//Rozmycie 
-	erode(binary, binary, element);									//Erozja 
-		
-	range_hsv_split[2] = binary;
-	merge(range_hsv_split, range_hsv);
-	cvtColor(range_hsv, range_bgr, COLOR_HSV2BGR);
-		
-	imshow(named_window[0], range_bgr);				
-	imshow(named_window[1], range_hsv_split[2]);
-
-}
+///range_img ver 1.0
+//void range_img()
+//{
+//	vector<Mat> range_hsv_split = hsv_split;
+//	Mat range_hsv, range_bgr;
+//	Mat element(3, 3, CV_8U, cv::Scalar(1));						//Okreslenie opcji erozji 
+//	const string named_window[] = { "zakres", "binary"};
+//	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
+//	namedWindow(named_window[1], CV_WINDOW_AUTOSIZE);
+//
+//	if (alfa > beta)
+//	{
+//		inRange(hsv_split[0], beta, alfa, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+//		inRange(binary, 0, 50, binary);
+//	}
+//	else
+//	{
+//		inRange(hsv_split[0], alfa, beta, binary);                  //Progowanie zgodnie z wartosciami lowerb, i upperb			//hsv_split[0] - HUE - barwa
+//	}
+//
+//	blur(binary, binary, cv::Size(3, 3));							//Rozmycie 
+//	erode(binary, binary, element);									//Erozja 
+//		
+//	range_hsv_split[2] = binary;
+//	merge(range_hsv_split, range_hsv);
+//	cvtColor(range_hsv, range_bgr, COLOR_HSV2BGR);
+//		
+//	imshow(named_window[0], range_bgr);				
+//	imshow(named_window[1], range_hsv_split[2]);
+//
+//}
 
 ///tworzenie obrazu zakresu
 //void range_img()
