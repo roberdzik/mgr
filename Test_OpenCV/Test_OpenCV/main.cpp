@@ -7,7 +7,7 @@ using namespace cv;
 using namespace std;
 
 /// Global variables
-const string file_name = ("pomidor.jpg");	//nazwa obrazu do obróbki
+const string file_name = ("choinka.jpg");	//nazwa obrazu do obróbki
 Mat img, img_range, img_s_range, hsv, binary;
 vector<Mat> hsv_split, bgr_split, image_split;
 vector<int> compression_params;
@@ -35,6 +35,10 @@ int main(void)
 	img = imread("../data/" + file_name);
 	img_range = imread("../data/img_range_0.jpg");
 	img_s_range = imread("../data/img_range.jpg");
+
+	///Ustawienia parametrów obrazów
+	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
+	compression_params.push_back(100);							//Jakosc 100 
 	
 	///Stworzenie ogna na grafike
 	const string window_0[] = { "Range"};
@@ -144,9 +148,6 @@ void BGR_to_HSV()
 	imshow(named_window[3], hsv_split[1]);						//Nasycenie 
 	imshow(named_window[4], hsv_split[2]);						//Wartosc 
 
-	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
-	compression_params.push_back(100);							//Jakosc 100 
-	
 	///Zapis poszczegolnych obrazow 
 	imwrite("../data/hsv.jpg", hsv, compression_params);   
 	imwrite("../data/hue.jpg", hsv_split[0], compression_params);
@@ -173,10 +174,6 @@ void BGR()
 	Blue();
 	Green();
 	Red();
-
-	///Ustawienia parametrów obrazów
-	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
-	compression_params.push_back(100);							//Jakosc 100 
 
 	///Zapisanie obrazów
 	imwrite("../data/Blue.jpg", bgr_split[0], compression_params);
@@ -269,13 +266,9 @@ void range_img()
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
 	imshow(named_window[0], img_s_range);
 	
-	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
-	compression_params.push_back(100);							//Jakosc 100 
-
 	///Zapis poszczegolnych obrazow 
 	imwrite("../data/range_selected.jpg", img_s_range, compression_params);
 }
-
 
 ///Funkcja testowa
 void Test()
@@ -303,9 +296,6 @@ void Test()
 	const string named_window[] = { "obraz po progowaniu" };
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
 	imshow(named_window[0], img_s);
-
-	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
-	compression_params.push_back(100);							//Jakosc 100 
 
 	///Zapis poszczegolnych obrazow 
 	imwrite("../data/after.jpg", img_s, compression_params);
