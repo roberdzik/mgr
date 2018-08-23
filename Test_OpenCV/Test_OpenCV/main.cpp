@@ -7,11 +7,13 @@ using namespace cv;
 using namespace std;
 
 /// Global variables
-const string file_name = ("test_color.jpg");	//nazwa obrazu do obróbki
+const string file_name = ("pomidor.jpg");	//nazwa obrazu do obróbki
 Mat img, img_range, img_s_range, hsv, binary;
 vector<Mat> hsv_split, bgr_split, image_split;
 vector<int> compression_params;
 int alfa = 0, beta = 0;
+Mat img_B, img_G, img_R;
+Mat binary_0, img_split_0, img_s;
 
 void BGR_to_HSV();		/*Funkcja odpowiedzialna za konwersje obrazu BGR na HSV.*/
 void BGR();				/*Funkcja odpowiedzialna za wyœwietlenie kana³ów i sk³adowych BGR.*/
@@ -58,10 +60,7 @@ int main(void)
 	///Konwersja obrazu z BGR na HSV
 	BGR_to_HSV();
 	
-
-	
-	
-	//Test();
+	Test();
 	
 	///Funkcje chwilowo nie u¿ywane
 	//BGR();
@@ -186,7 +185,7 @@ void BGR()
 }
 void Blue()
 {
-	vector<Mat>  split_img, img_B;
+	vector<Mat>  split_img;
 	split(img, split_img);	//podzia³ obrazu na kana³y
 
 	///wyzerowanie kana³ów G i R
@@ -204,7 +203,7 @@ void Blue()
 }
 void Green()
 {
-	vector<Mat>  split_img, img_G;
+	vector<Mat>  split_img;
 	split(img, split_img);	//podzia³ obrazu na kana³y
 
 	///wyzerowanie kana³ów B i R
@@ -221,7 +220,7 @@ void Green()
 }
 void Red()
 {
-	vector<Mat>  split_img, img_R;
+	vector<Mat>  split_img;
 	split(img, split_img);	//podzia³ obrazu na kana³y
 
 	///wyzerowanie kana³ów B i G
@@ -281,7 +280,35 @@ void range_img()
 ///Funkcja testowa
 void Test()
 {
+	Mat element(3, 3, CV_8U, cv::Scalar(1));	//Okreslenie opcji erozji 
 
+	if (alfa > beta)
+	{
+		inRange(hsv_split[0], beta, alfa, binary_0);
+		inRange(binary_0, 0, 1, binary_0);
+	}
+	else
+	{
+		inRange(hsv_split[0], alfa, beta, binary_0);
+	}
+
+	blur(binary_0, binary_0, cv::Size(3, 3));	//Rozmycie 
+	erode(binary_0, binary_0, element);	//Erozja 
+
+	hsv_split[2] = binary_0;
+	merge(hsv_split, img_split_0);	//scalenie kana³ów
+	cvtColor(img_split_0, img_s, COLOR_HSV2BGR);	//Konwersja HSV -> BGR
+
+	///Stworzenie okien
+	const string named_window[] = { "obraz po progowaniu" };
+	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
+	imshow(named_window[0], img_s);
+
+	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
+	compression_params.push_back(100);							//Jakosc 100 
+
+	///Zapis poszczegolnych obrazow 
+	imwrite("../data/after.jpg", img_s, compression_params);
 }
 
 ///range_img ver 1.0
