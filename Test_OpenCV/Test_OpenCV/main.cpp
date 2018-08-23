@@ -8,7 +8,7 @@ using namespace std;
 
 /// Global variables
 const string file_name = ("test_color.jpg");	//nazwa obrazu do obróbki
-Mat img, img_range, img_s_range, img_bgr, hsv, binary;
+Mat img, img_range, img_s_range, hsv, binary;
 vector<Mat> hsv_split, bgr_split, image_split;
 vector<int> compression_params;
 int alfa = 0, beta = 0;
@@ -19,11 +19,11 @@ void Blue();			/*Funkcja wyœwietlaj¹ca sk³adow¹ Blue obrazu.*/
 void Green();			/*Funkcja wyœwietlaj¹ca sk³adow¹ Green obrazu.*/
 void Red();				/*Funkcja wyœwietlaj¹ca sk³adow¹ Red obrazu.*/
 void zakres();			/*Funkcja pozwalaj¹ca wprowadzenie zakresu kolorów.*/
-void range_img();
-void Test();			/*Funkcja testowa*/
+void range_img();		/*Funkcja wyœwietlaj¹ca zakres wybranych kolorów.*/
+void Test();			/*Funkcja testowa.*/
 void print_image();		/*      Funkcja nie u¿ywana     */
-int alfa_range();
-int beta_range();
+int alfa_range();		/*Dolny zakres.*/
+int beta_range();		/*Górny zakres.*/
 
 //void HSV_to_BGR();
 
@@ -35,7 +35,7 @@ int main(void)
 	img_s_range = imread("../data/img_range.jpg");
 	
 	///Stworzenie ogna na grafike
-	const string window_0[] = { "Range" };
+	const string window_0[] = { "Range"};
 	namedWindow(window_0[0], CV_WINDOW_AUTOSIZE);
 	imshow(window_0[0], img_range);	//Wyœwietlenie grafiki zakresu w oknie
 
@@ -52,15 +52,19 @@ int main(void)
 
 	///wprowadzenie zakresu koloru;
 	zakres();
+	///Wyœwietlenei wybranego zakresu kolorów
+	range_img();
 
 	///Konwersja obrazu z BGR na HSV
 	BGR_to_HSV();
 	
-	Test();
+
+	
+	
+	//Test();
 	
 	///Funkcje chwilowo nie u¿ywane
 	//BGR();
-	//range_img();
 	//HSV_to_BGR();
 			
 	cout << "test#100" << endl;	//Informacja testowa
@@ -206,7 +210,7 @@ void Green()
 	///wyzerowanie kana³ów B i R
 	split_img[0] = Mat::zeros(img.rows, img.cols, CV_8UC1);
 	split_img[2] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	merge(split_img, img_G);
+	merge(split_img, img_G);	//scalenie kana³ów
 
 	///Stworzenie okien
 	const string named_window[] = { "Green" };
@@ -223,7 +227,7 @@ void Red()
 	///wyzerowanie kana³ów B i G
 	split_img[0] = Mat::zeros(img.rows, img.cols, CV_8UC1);
 	split_img[1] = Mat::zeros(img.rows, img.cols, CV_8UC1);
-	merge(split_img, img_R);
+	merge(split_img, img_R);	//scalenie kana³ów
 
 	///Stworzenie okien
 	const string named_window[] = { "Red" };
@@ -258,18 +262,25 @@ void range_img()
 	erode(binary, binary, element);	//Erozja 
 
 	img_hsv_split[2] = binary;
-	merge(img_hsv_split, img_hsv);
-	cvtColor(img_hsv, img_bgr, COLOR_HSV2BGR);
+	merge(img_hsv_split, img_hsv);	//scalenie kana³ów
+	cvtColor(img_hsv, img_s_range, COLOR_HSV2BGR);	//Konwersja HSV -> BGR
 
+	///Stworzenie okien
 	const string named_window[] = { "zakres", "binary" };
 	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	imshow(named_window[0], img_bgr);
+	imshow(named_window[0], img_s_range);
 	
 	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);		//Konwersja jpg 
 	compression_params.push_back(100);							//Jakosc 100 
 
 	///Zapis poszczegolnych obrazow 
-	imwrite("../data/range_selected.jpg", img_bgr, compression_params);
+	imwrite("../data/range_selected.jpg", img_s_range, compression_params);
+}
+
+
+///Funkcja testowa
+void Test()
+{
 
 }
 
