@@ -6,6 +6,118 @@
 using namespace cv;
 using namespace std;
 
+int main()
+{
+	string window_name[] = { "Kamera", "Contour", "Binary", "Zakres"};
+	Mat range_img, img, hsv_img, binary;
+
+	range_img = imread("../data/img_range_0.jpg");
+
+	//*** 
+	Mat cont;
+	//*** 
+
+	vector<Mat> hsv_split;
+	for (int i = 0; i < 4; i++) namedWindow(window_name[i], WINDOW_AUTOSIZE);
+	int lowerb = 100, upperb = 109;
+	//namedWindow(window_name[3], WINDOW_NORMAL);
+	
+	while (waitKey(20) != 27)
+	{
+		createTrackbar("Thresh lb", window_name[3], &lowerb, 179, NULL);
+		createTrackbar("Thresh ub", window_name[3], &upperb, 179, NULL);
+
+		img = imread("../data/sunflower.jpg");
+		cvtColor(img, hsv_img, CV_BGR2HSV);
+		split(hsv_img, hsv_split);
+		
+		
+		if (lowerb > upperb)
+		{
+			inRange(hsv_split[0], upperb, lowerb, binary);
+			inRange(binary, 0, 1, binary);
+		}
+		else if(upperb > lowerb)
+		{
+			inRange(hsv_split[0], lowerb, upperb, binary);
+		}
+
+		blur(binary, binary, cv::Size(3, 3));
+		erode(binary, binary, cv::Mat());
+
+		//*** 
+		vector<vector<Point> > contours;
+		vector<Point> contours_poly;
+		Rect boundRect;
+		binary.copyTo(cont);
+		findContours(cont, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+		int max = 0, i_cont = -1;
+		Mat drawing = Mat::zeros(cont.size(), CV_8UC3);
+		for (int i = 0; i < contours.size(); i++)
+		{
+			if (abs(contourArea(Mat(contours[i]))) > max)
+			{
+				max = abs(contourArea(Mat(contours[i])));
+				i_cont = i;
+			}
+		}
+		if (i_cont >= 0)
+		{
+			approxPolyDP(Mat(contours[i_cont]), contours_poly, 3, true);
+			boundRect = boundingRect(Mat(contours_poly));
+			fillConvexPoly(img, contours_poly, contours_poly.size());
+			rectangle(img, boundRect.tl(), boundRect.br(), Scalar(125, 250, 125), 2, 8, 0);
+			line(img, boundRect.tl(), boundRect.br(), Scalar(250, 125, 125), 2, 8, 0);
+			line(img, Point(boundRect.x + boundRect.width, boundRect.y), Point(boundRect.x, boundRect.y + boundRect.height), Scalar(250, 125, 125), 2, 8, 0);
+			string s;
+			stringstream out;
+			out << boundRect.x + boundRect.width / 2 << "x" << boundRect.y + boundRect.height / 2;
+			s = out.str();
+			putText(img, s, Point(50, 50), CV_FONT_HERSHEY_COMPLEX, 1, Scalar(20, 40, 80), 3, 8);
+			drawContours(drawing, contours, i_cont, Scalar(125, 125, 250), 1);
+		}
+		imshow(window_name[1], drawing);
+		//*** 
+
+		imshow(window_name[0], img);
+		imshow(window_name[2], binary);
+		imshow(window_name[3], range_img);
+	}
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /// Global variables
 /*
 Const string file_name = ("choinka.jpg");	//nazwa obrazu do obróbki
@@ -30,7 +142,6 @@ int beta_range();		//Górny zakres.
 
 //void HSV_to_BGR();
 */
-
 
 ///main
 /*int main(void)
@@ -498,8 +609,8 @@ int beta_range();		//Górny zakres.
 
 }*/
 
-
 ///	HSV_to_BGR - test
+
 /*void HSV_to_BGR()
 {
 	Mat test_picture, test_hsv;
@@ -526,7 +637,4 @@ int beta_range();		//Górny zakres.
 	imshow(named_window[0], test_new);
 
 	cout << "test 3 \n\n";
-	
 }*/
-
-
