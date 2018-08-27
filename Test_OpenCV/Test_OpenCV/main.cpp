@@ -6,32 +6,43 @@
 using namespace cv;
 using namespace std;
 
+
+vector<Mat> hsv_split;
+Mat range_img, img_s_range, img_range, img, hsv_img, binary;
+Mat cont;
+string window_name[] = { "Kamera", "Contour", "Binary", "Zakres", "Wybrany zakres"};
+int lowerb = 0, upperb = 179;	
+
+Mat img_range_hsv;
+vector<Mat> img_hsv_split;
+Mat element(3, 3, CV_8U, cv::Scalar(1));	//Okreslenie opcji erozji 
+
+void print_range_img();
+
+
 int main()
 {
-	string window_name[] = { "Kamera", "Contour", "Binary", "Zakres"};
-	Mat range_img, img, hsv_img, binary;
-
 	range_img = imread("../data/img_range_0.jpg");
+	img_s_range = imread("../data/img_range.jpg");
+	img_range = img_s_range;
 
-	//*** 
-	Mat cont;
-	//*** 
-
-	vector<Mat> hsv_split;
-	for (int i = 0; i < 4; i++) namedWindow(window_name[i], WINDOW_AUTOSIZE);
-	int lowerb = 100, upperb = 109;
-	//namedWindow(window_name[3], WINDOW_NORMAL);
+	cvtColor(img_s_range, img_range_hsv, CV_BGR2HSV);	//Konwersja BGR->HSV
+	split(img_range_hsv, img_hsv_split);	//Rozdzielenie HSV na poszczególne kana³y 
 	
+	for (int i = 0; i < 5; i++) namedWindow(window_name[i], WINDOW_AUTOSIZE);
+		
 	while (waitKey(20) != 27)
 	{
-		createTrackbar("Thresh lb", window_name[3], &lowerb, 179, NULL);
-		createTrackbar("Thresh ub", window_name[3], &upperb, 179, NULL);
-
-		img = imread("../data/sunflower.jpg");
+		img = imread("../data/pilka.jpg");
 		cvtColor(img, hsv_img, CV_BGR2HSV);
 		split(hsv_img, hsv_split);
-		
-		
+
+		print_range_img();
+		imshow(window_name[4], range_img);
+		imshow(window_name[3], img_range);
+		createTrackbar("Thresh lb", window_name[4], &lowerb, 179, NULL);
+		createTrackbar("Thresh ub", window_name[4], &upperb, 179, NULL);
+				
 		if (lowerb > upperb)
 		{
 			inRange(hsv_split[0], upperb, lowerb, binary);
@@ -63,12 +74,12 @@ int main()
 		}
 		if (i_cont >= 0)
 		{
-			approxPolyDP(Mat(contours[i_cont]), contours_poly, 3, true);
+			approxPolyDP(Mat(contours[i_cont]), contours_poly, 2, true);
 			boundRect = boundingRect(Mat(contours_poly));
 			fillConvexPoly(img, contours_poly, contours_poly.size());
-			rectangle(img, boundRect.tl(), boundRect.br(), Scalar(125, 250, 125), 2, 8, 0);
-			line(img, boundRect.tl(), boundRect.br(), Scalar(250, 125, 125), 2, 8, 0);
-			line(img, Point(boundRect.x + boundRect.width, boundRect.y), Point(boundRect.x, boundRect.y + boundRect.height), Scalar(250, 125, 125), 2, 8, 0);
+			rectangle(img, boundRect.tl(), boundRect.br(), Scalar(125, 125, 125), 1, 8, 0);
+			line(img, boundRect.tl(), boundRect.br(), Scalar(200, 200, 200), 1, 8, 0);
+			line(img, Point(boundRect.x + boundRect.width, boundRect.y), Point(boundRect.x, boundRect.y + boundRect.height), Scalar(125, 125, 125), 1, 8, 0);
 			string s;
 			stringstream out;
 			out << boundRect.x + boundRect.width / 2 << "x" << boundRect.y + boundRect.height / 2;
@@ -81,20 +92,32 @@ int main()
 
 		imshow(window_name[0], img);
 		imshow(window_name[2], binary);
-		imshow(window_name[3], range_img);
 	}
 	return 0;
 }
 
 
+void print_range_img()
+{
+	///Progowanie zgodnie z wartosciami lowerb, i upperb (hsv_split[0] - HUE - barwa)
+	if (lowerb > upperb)
+	{
+		inRange(img_hsv_split[0], upperb, lowerb, binary);
+		inRange(binary, 0, 1, binary);
+	}
+	else
+	{
+		inRange(img_hsv_split[0], lowerb, upperb, binary);
+	}
 
+	blur(binary, binary, cv::Size(3, 3));	//Rozmycie 
+	erode(binary, binary, element);	//Erozja 
 
+	img_hsv_split[2] = binary;
+	merge(img_hsv_split, img_range_hsv);	//scalenie kana³ów
+	cvtColor(img_range_hsv, img_range, COLOR_HSV2BGR);	//Konwersja HSV -> BGR
 
-
-
-
-
-
+}
 
 
 
@@ -638,3 +661,4 @@ int beta_range();		//Górny zakres.
 
 	cout << "test 3 \n\n";
 }*/
+
