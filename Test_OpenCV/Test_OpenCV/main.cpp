@@ -270,36 +270,41 @@ void range_img()
 	imwrite("../data/range_selected.jpg", img_s_range, compression_params);
 }
 
-///Funkcja testowa
 void Test()
 {
-	Mat element(3, 3, CV_8U, cv::Scalar(1));	//Okreslenie opcji erozji 
 
-	if (alfa > beta)
-	{
-		inRange(hsv_split[0], beta, alfa, binary_0);
-		inRange(binary_0, 0, 1, binary_0);
-	}
-	else
-	{
-		inRange(hsv_split[0], alfa, beta, binary_0);
-	}
-
-	blur(binary_0, binary_0, cv::Size(3, 3));	//Rozmycie 
-	erode(binary_0, binary_0, element);	//Erozja 
-
-	hsv_split[2] = binary_0;
-	merge(hsv_split, img_split_0);	//scalenie kana³ów
-	cvtColor(img_split_0, img_s, COLOR_HSV2BGR);	//Konwersja HSV -> BGR
-
-	///Stworzenie okien
-	const string named_window[] = { "obraz po progowaniu" };
-	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
-	imshow(named_window[0], img_s);
-
-	///Zapis poszczegolnych obrazow 
-	imwrite("../data/after.jpg", img_s, compression_params);
 }
+
+///Funkcja testowa - progowanie kolorow wg zakresu
+//void Test()
+//{
+//	Mat element(3, 3, CV_8U, cv::Scalar(1));	//Okreslenie opcji erozji 
+//
+//	if (alfa > beta)
+//	{
+//		inRange(hsv_split[0], beta, alfa, binary_0);
+//		inRange(binary_0, 0, 1, binary_0);
+//	}
+//	else
+//	{
+//		inRange(hsv_split[0], alfa, beta, binary_0);
+//	}
+//
+//	blur(binary_0, binary_0, cv::Size(3, 3));	//Rozmycie 
+//	erode(binary_0, binary_0, element);	//Erozja 
+//
+//	hsv_split[2] = binary_0;
+//	merge(hsv_split, img_split_0);	//scalenie kana³ów
+//	cvtColor(img_split_0, img_s, COLOR_HSV2BGR);	//Konwersja HSV -> BGR
+//
+//	///Stworzenie okien
+//	const string named_window[] = { "obraz po progowaniu" };
+//	namedWindow(named_window[0], CV_WINDOW_AUTOSIZE);
+//	imshow(named_window[0], img_s);
+//
+//	///Zapis poszczegolnych obrazow 
+//	imwrite("../data/after.jpg", img_s, compression_params);
+//}
 
 ///range_img ver 1.0
 //void range_img()
