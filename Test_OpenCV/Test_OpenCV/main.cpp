@@ -11,7 +11,7 @@ vector<Mat> hsv_split;
 Mat range_img, img_s_range, img_range, img, hsv_img, binary;
 Mat cont;
 string window_name[] = { "Kamera", "Contour", "Binary", "Zakres", "Wybrany zakres"};
-int lowerb = 0, upperb = 179;	
+int lowerb = 51, upperb = 59;	
 
 Mat img_range_hsv;
 vector<Mat> img_hsv_split;
