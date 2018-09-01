@@ -8,9 +8,9 @@ using namespace std;
 
 
 vector<Mat> hsv_split;
-Mat range_img, img_s_range, img_range, img, hsv_img, binary;
+Mat range_img, img_s_range, img_range, img, img_object, hsv_img, binary;
 Mat cont;
-string window_name[] = { "Kamera", "Contour", "Binary", "Zakres", "Wybrany zakres"};
+string window_name[] = { "Kamera", "Contour", "Binary", "Zakres", "Wybrany zakres", "test"};
 int lowerb = 51, upperb = 59;	
 
 Mat img_range_hsv;
@@ -29,7 +29,7 @@ int main()
 	cvtColor(img_s_range, img_range_hsv, CV_BGR2HSV);	//Konwersja BGR->HSV
 	split(img_range_hsv, img_hsv_split);	//Rozdzielenie HSV na poszczególne kana³y 
 	
-	for (int i = 0; i < 5; i++) namedWindow(window_name[i], WINDOW_AUTOSIZE);
+	for (int i = 0; i < 6; i++) namedWindow(window_name[i], WINDOW_AUTOSIZE);
 		
 	while (waitKey(20) != 27)
 	{
@@ -89,9 +89,18 @@ int main()
 		}
 		imshow(window_name[1], drawing);
 		//*** 
-
+		
 		imshow(window_name[0], img);
 		imshow(window_name[2], binary);
+
+		//testowe
+		img_object = drawing;
+		fillConvexPoly(img_object, contours_poly, contours_poly.size());
+		cvtColor(img_object, img_object, CV_RGB2GRAY);
+		blur(img_object, img_object, cv::Size(5, 5));	//Rozmycie 
+		//cvLaplace(img_object, img_object, 3);
+		imshow(window_name[5], img_object);
+		imwrite("../data/object.jpg", img_object);
 	}
 	return 0;
 }
