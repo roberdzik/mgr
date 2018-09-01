@@ -8,7 +8,7 @@ using namespace std;
 
 
 vector<Mat> hsv_split;
-Mat range_img, img_s_range, img_range, img, img_object, hsv_img, binary;
+Mat range_img, img_s_range, img_range, img, img_object, img_test, hsv_img, binary;
 Mat cont;
 string window_name[] = { "Kamera", "Contour", "Binary", "Zakres", "Wybrany zakres", "test"};
 int lowerb = 51, upperb = 59;	
@@ -95,12 +95,66 @@ int main()
 
 		//testowe
 		img_object = drawing;
+		Mat elem_3(3, 3, CV_8U, cv::Scalar(1));
+		Mat elem_5(5, 5, CV_8U, cv::Scalar(1));
+		vector<Point> test;
+		Rect test2;
 		fillConvexPoly(img_object, contours_poly, contours_poly.size());
 		cvtColor(img_object, img_object, CV_RGB2GRAY);
-		blur(img_object, img_object, cv::Size(5, 5));	//Rozmycie 
-		//cvLaplace(img_object, img_object, 3);
+
+		for (int z = 0; z < 5; z++)
+		{
+			erode(img_object, img_object, elem_3);
+			//blur(img_object, img_object, cv::Size(5, 5));
+			//erode(img_object, img_object, elem_3);
+			blur(img_object, img_object, cv::Size(7, 7));
+		}
+		inRange(img_object, 1, 255, img_object);
+		
+		for (int z = 0; z < 5; z++)
+		{
+			erode(img_object, img_object, elem_5);
+			blur(img_object, img_object, cv::Size(5, 5));
+		}
+		inRange(img_object, 1, 255, img_object);
+
+		for (int z = 0; z < 5; z++)
+		{
+			erode(img_object, img_object, elem_3);
+			blur(img_object, img_object, cv::Size(3, 3));
+		}
+		inRange(img_object, 1, 255, img_object);
+
+		imwrite("../data/objec_test_1.jpg", img_object);
+		
+		//drawContours(img_object, contours, i_cont, Scalar(125, 125, 250), 1);
+		//imshow(window_name[5], img_object);
+		//imwrite("../data/objec_test_2.jpg", img_object);
+
+
+		for (int i = 0; i < contours.size(); i++)
+		{
+			if (abs(contourArea(Mat(contours[i]))) > max)
+			{
+				max = abs(contourArea(Mat(contours[i])));
+				i_cont = i;
+			}
+		}
+		if (i_cont >= 0)
+		{
+		approxPolyDP(Mat(contours[i_cont]), test, 2, true);
+		test2 = boundingRect(Mat(test));
+		rectangle(img_object, test2.tl(), test2.br(), Scalar(125, 125, 125), 1, 8, 0);
+		string d;
+		stringstream out;
+		out << test2.x + test2.width / 2 << "x" << test2.y + test2.height / 2;
+		d = out.str();
+		putText(img_object, d, Point(50, 50), CV_FONT_HERSHEY_COMPLEX, 1, Scalar(20, 40, 80), 3, 8);
+
+		}
+		
 		imshow(window_name[5], img_object);
-		imwrite("../data/object.jpg", img_object);
+		//cvCircle(img_object, )
 	}
 	return 0;
 }
